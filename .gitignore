@@ -6,3 +6,10 @@ target
 /.project
 /.settings
 /RUNNING_PID
+tmp
+project/project
+project/target
+project/sbt-ui.sbt
+project/.sbtserver
+.sbtserver
+project/.sbtserver.lock
