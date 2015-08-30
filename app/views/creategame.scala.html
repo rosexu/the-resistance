@@ -1,16 +1,20 @@
 @main("Create Game | The Resistance") {
-    <form>
-        <div class="form-group">
+    <form method="post" action="/store-name">
+        <div class="form-group row no-margin">
             <label for="playerName">
                 Enter Your Name
             </label>
-            <div class="input-group">
-                <input type="text" class="form-control" id="playerName"/>
+            <div class="input-group col-xs-8 col-xs-offset-2">
+                <input name="name" type="text" class="form-control" id="playerName"/>
             </div>
         </div>
-        <button type="submit" class="btn btn-default">
-            Submit
-        </button>
+        <div class="buttons">
+            <button type="submit" class="btn btn-default buttons-margin">
+                Submit
+            </button>
+        </div>
     </form>
-    <button class="btn btn-default">Back</button>
+    <div class="buttons second">
+        <a href="/"><button class="btn btn-default buttons-margin">Back</button></a>
+    </div>
 }
