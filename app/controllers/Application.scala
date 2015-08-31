@@ -9,6 +9,6 @@ class Application extends Controller {
     Ok(views.html.index())
   }
 
-  def createGame = new CreateGamePage().index
+//  def createGame = new CreateGamePage().index
 
 }

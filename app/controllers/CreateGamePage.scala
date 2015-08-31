@@ -1,12 +1,15 @@
 package controllers
 
-import play.api.mvc.{AnyContent, Action, Controller}
+import javax.inject.Inject
+
+import play.api.mvc.{Action, Controller}
+import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 
 /**
  * Created by rosexu on 15-08-29.
  * @author Rose Xu
  */
-class CreateGamePage extends Controller {
+class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends Controller with MongoController with ReactiveMongoComponents{
   def index = Action {
     Ok(views.html.creategame())
   }

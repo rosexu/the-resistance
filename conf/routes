@@ -4,7 +4,7 @@
 
 # Home page
 GET        /                    controllers.Application.index
-GET        /create-game         controllers.Application.createGame
+GET        /create-game         controllers.CreateGamePage.index
 
 POST       /store-name          controllers.CreateGamePage.storeGameKey
 
