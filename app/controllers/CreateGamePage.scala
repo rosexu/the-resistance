@@ -26,21 +26,18 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
     Ok(views.html.creategame())
   }
 
-  def storeGameKey = Action.async(parse.tolerantFormUrlEncoded) { request =>
+  def storeUserAndGameKey = Action.async(parse.tolerantFormUrlEncoded) { request =>
     val name: String = getStringName(request.body.get("name").map(_.head))
     val gameKey: String = generateGameKey
     val user1: User = User(name, None)
     val userList: List[User] = List(user1)
     val game: Game = Game(gameKey, userList)
 
-    println(name)
-    println(gameKey)
-
     println(game.toString)
 
     val futureResult = gameCollection.insert(game)
 
-    futureResult.map(_ => Ok(views.html.index()))
+    futureResult.map(_ => Ok(views.html.waiting(game, user1)))
   }
 
   def getStringName(option: Option[String]): String = {

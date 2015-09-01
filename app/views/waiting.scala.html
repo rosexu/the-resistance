@@ -1,0 +1,25 @@
+@(game: Game, currentUser: User)
+
+@main("Waiting For Players | The Resistance") {
+    <div class="row no-margin">
+        <div class="col-xs-12
+                    col-sm-8 col-sm-offset-2">
+            <div class="access-code text-center">
+                <h5>Game Access Code: </h5>
+                <h4 id="game-key">@game.id</h4>
+                <h3 id="waiting-for-players">Waiting For Players...</h3>
+            </div>
+            <ol class="players-list">
+                <li>
+                    <span>@currentUser.name</span>
+                    <span class="glyphicon glyphicon-star"></span>
+                    <span class="glyphicon glyphicon-flag"></span>
+                </li>
+            </ol>
+            <div class="buttons">
+                <button class="btn btn-default">Start Game</button>
+                <button class="btn btn-default">Back</button>
+            </div>
+        </div>
+    </div>
+}
