@@ -1,0 +1,21 @@
+@main("Join Game | The Resistance") {
+    <form method="post" action="/join-game">
+        <div class="form-group row no-margin">
+            <label for="key-code">
+                Enter Key Code
+            </label>
+            <div class="input-group col-xs-8 col-xs-offset-2
+                                    col-sm-6 col-sm-offset-3">
+                <input name="keycode" type="text" class="form-control" id="key-code"/>
+            </div>
+        </div>
+        <div class="buttons">
+            <button type="submit" class="btn btn-default buttons-margin">
+                Submit
+            </button>
+        </div>
+    </form>
+    <div class="buttons second">
+        <a href="/"><button class="btn btn-default buttons-margin">Back</button></a>
+    </div>
+}

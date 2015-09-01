@@ -13,6 +13,7 @@ import play.modules.reactivemongo.json._
 import play.modules.reactivemongo.json.collection._
 
 /**
+ * Page Controller for the create game page. Responsible for generating and storing game key and the first player
  * Created by rosexu on 15-08-29.
  * @author Rose Xu
  */
