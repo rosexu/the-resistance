@@ -30,6 +30,7 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
   var gameKey: String = "";
   def gameCollection: JSONCollection = db.collection[JSONCollection]("games")
   var messageCollection: BSONCollection = db.collection[BSONCollection]("messages")
+  var userCollection: JSONCollection = db.collection[JSONCollection]("users")
 
   def index = Action {
     Ok(views.html.creategame())
@@ -38,18 +39,24 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
   def storeUserAndGameKey = Action.async(parse.tolerantFormUrlEncoded) { request =>
     val name: String = getStringName(request.body.get("name").map(_.head))
     gameKey = generateGameKey
+    userCollection = db.collection[JSONCollection]("users" + gameKey)
     val user1: User = User(name, None)
-    val userList: List[User] = List(user1)
-    val game: Game = Game(gameKey, userList)
+    val game: Game = Game(gameKey, "Waiting")
 
     println(game.toString)
 
     val futureResult = gameCollection.insert(game)
+    val futureResult2 = userCollection.insert(user1)
 
     messageCollection = db.collection[BSONCollection]("messages" + gameKey)
 
-    futureResult.map(_=> startTailableCursor())
-    futureResult.map(_ => Ok(views.html.waiting(game, user1)))
+    val waitForBoth = for {
+      fr <- futureResult
+      fr2 <- futureResult2
+    } yield (fr, fr2)
+
+    waitForBoth.map(_=> startTailableCursor())
+    waitForBoth.map(_ => Ok(views.html.waiting(game, user1)))
   }
 
   def startTailableCursor(): Unit = {

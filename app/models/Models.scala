@@ -10,7 +10,7 @@ case class User (
 
 case class Game (
                   id: String,
-                  users: List[User])
+                  status: String)
 
 object JsonFormats {
 
