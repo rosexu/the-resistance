@@ -16,6 +16,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import play.modules.reactivemongo.json._
 import play.modules.reactivemongo.json.collection._
 
+import scala.concurrent.Future
+
 /**
  * Page Controller for the create game page. Responsible for generating and storing game key and the first player
  * Created by rosexu on 15-08-29.
@@ -25,6 +27,7 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
 
   import models.JsonFormats._
 
+  var gameKey: String = "";
   def gameCollection: JSONCollection = db.collection[JSONCollection]("games")
   def messageCollection: BSONCollection = db.collection[BSONCollection]("messages")
 
@@ -34,7 +37,7 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
 
   def storeUserAndGameKey = Action.async(parse.tolerantFormUrlEncoded) { request =>
     val name: String = getStringName(request.body.get("name").map(_.head))
-    val gameKey: String = generateGameKey
+    gameKey = generateGameKey
     val user1: User = User(name, None)
     val userList: List[User] = List(user1)
     val game: Game = Game(gameKey, userList)
@@ -48,15 +51,19 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
   }
 
   def startTailableCursor(): Unit = {
-    messageCollection.convertToCapped(1000, None)
-    println("open tailable cursor")
-    val cursor = messageCollection
-      .find(BSONDocument())
-      .options(QueryOpts().tailable.awaitData)
-      .cursor()
-    cursor.enumerate().apply(Iteratee.foreach {
-      doc => println("Document inserted: " + doc.toString())
-    })
+    val fun: Future[Unit] = messageCollection.createCapped(1000, None)
+    fun onComplete{ _ =>
+      val doc = BSONDocument("message" -> "init")
+      messageCollection.insert(doc)
+      println("open tailable cursor")
+      val cursor = messageCollection
+        .find(BSONDocument())
+        .options(QueryOpts().tailable.awaitData)
+        .cursor()
+      cursor.enumerate().apply(Iteratee.foreach {
+        doc => println("Document inserted: " + doc.toString())
+      })
+    }
   }
 
   def addPlayer = Action {
