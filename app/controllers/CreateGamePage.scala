@@ -29,7 +29,7 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
 
   var gameKey: String = "";
   def gameCollection: JSONCollection = db.collection[JSONCollection]("games")
-  def messageCollection: BSONCollection = db.collection[BSONCollection]("messages")
+  var messageCollection: BSONCollection = db.collection[BSONCollection]("messages")
 
   def index = Action {
     Ok(views.html.creategame())
@@ -45,6 +45,8 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
     println(game.toString)
 
     val futureResult = gameCollection.insert(game)
+
+    messageCollection = db.collection[BSONCollection]("messages" + gameKey)
 
     futureResult.map(_=> startTailableCursor())
     futureResult.map(_ => Ok(views.html.waiting(game, user1)))
