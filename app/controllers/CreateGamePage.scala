@@ -2,11 +2,15 @@ package controllers
 
 import javax.inject.Inject
 import models.{User, Game}
+import play.api.libs.iteratee.Iteratee
 import play.api.libs.json.Json
 
 import play.api.mvc.{Action, Controller}
 import play.modules.reactivemongo.json.collection.JSONCollection
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
+import reactivemongo.api.QueryOpts
+import reactivemongo.api.collections.bson.BSONCollection
+import reactivemongo.bson.BSONDocument
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import play.modules.reactivemongo.json._
@@ -22,6 +26,7 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
   import models.JsonFormats._
 
   def gameCollection: JSONCollection = db.collection[JSONCollection]("games")
+  def messageCollection: BSONCollection = db.collection[BSONCollection]("messages")
 
   def index = Action {
     Ok(views.html.creategame())
@@ -38,7 +43,26 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
 
     val futureResult = gameCollection.insert(game)
 
+    futureResult.map(_=> startTailableCursor())
     futureResult.map(_ => Ok(views.html.waiting(game, user1)))
+  }
+
+  def startTailableCursor(): Unit = {
+    messageCollection.convertToCapped(1000, None)
+    println("open tailable cursor")
+    val cursor = messageCollection
+      .find(BSONDocument())
+      .options(QueryOpts().tailable.awaitData)
+      .cursor()
+    cursor.enumerate().apply(Iteratee.foreach {
+      doc => println("Document inserted: " + doc.toString())
+    })
+  }
+
+  def addPlayer = Action {
+    val doc = BSONDocument("message" -> "add new player")
+    messageCollection.insert(doc)
+    Ok
   }
 
   def getStringName(option: Option[String]): String = {
