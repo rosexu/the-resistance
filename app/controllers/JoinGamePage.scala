@@ -2,9 +2,17 @@ package controllers
 
 import javax.inject.Inject
 
-import models.{Game, User}
+import models._
+import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 import play.modules.reactivemongo.{ReactiveMongoComponents, MongoController, ReactiveMongoApi}
+import reactivemongo.api.Cursor
+
+import play.modules.reactivemongo.json._
+import play.modules.reactivemongo.json.collection._
+
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Page controller for the join game page
@@ -12,6 +20,10 @@ import play.modules.reactivemongo.{ReactiveMongoComponents, MongoController, Rea
  */
 class JoinGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends Controller
 with MongoController with ReactiveMongoComponents{
+
+  import models.JsonFormats._
+
+  def gameCollection: JSONCollection = db.collection[JSONCollection]("games")
 
   def index = Action {
     Ok(views.html.joingame())
@@ -22,7 +34,20 @@ with MongoController with ReactiveMongoComponents{
 
     println(keycode)
 
+    val futureList = retrieveGame(gameCollection, keycode)
+
+    futureList onComplete{ list =>
+      val game: Game = list.get.head
+      println(game.toString)
+    }
+
     Ok(views.html.index())
+  }
+
+  def retrieveGame(collection: JSONCollection, gameKey: String): Future[List[Game]] = {
+    val cursor: Cursor[Game] = collection.find(Json.obj("id" -> gameKey)).cursor[Game]
+    val futureList: Future[List[Game]] = cursor.collect[List]()
+    return futureList
   }
 
   def getStringKeyCode(keycode: Option[String]): String = {
