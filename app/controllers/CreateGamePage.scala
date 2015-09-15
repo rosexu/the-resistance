@@ -11,6 +11,7 @@ import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMo
 import reactivemongo.api.QueryOpts
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument
+import utilities.optionalUtil
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import play.modules.reactivemongo.json._
@@ -37,7 +38,7 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
   }
 
   def storeUserAndGameKey = Action.async(parse.tolerantFormUrlEncoded) { request =>
-    val name: String = getStringName(request.body.get("name").map(_.head))
+    val name: String = optionalUtil.getStringName(request.body.get("name").map(_.head))
     gameKey = generateGameKey
     userCollection = db.collection[JSONCollection]("users" + gameKey)
     val user1: User = User(name, None)
@@ -79,13 +80,6 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
     val doc = BSONDocument("message" -> "add new player")
     messageCollection.insert(doc)
     Ok
-  }
-
-  def getStringName(option: Option[String]): String = {
-    option match {
-      case Some(name) => name
-      case None => "error"
-    }
   }
 
   def generateGameKey: String = {

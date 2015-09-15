@@ -10,6 +10,7 @@ import reactivemongo.api.Cursor
 
 import play.modules.reactivemongo.json._
 import play.modules.reactivemongo.json.collection._
+import utilities.optionalUtil
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,6 +27,7 @@ with MongoController with ReactiveMongoComponents{
   def gameCollection: JSONCollection = db.collection[JSONCollection]("games")
 // is there a better way of doing this? currently dummy global object as keyholder
   var currentGame: Game = Game("1242", "waiting")
+  var userCollection: JSONCollection = db.collection[JSONCollection]("users")
 
   def index = Action {
     Ok(views.html.joingame())
@@ -45,6 +47,16 @@ with MongoController with ReactiveMongoComponents{
     }
 
     Ok(views.html.creategame("/store-name-2"))
+  }
+
+  def storeUser = Action.async(parse.tolerantFormUrlEncoded) { request =>
+    val name: String = optionalUtil.getStringName(request.body.get("name").map(_.head))
+    val user1: User = User(name, None)
+
+    userCollection = db.collection[JSONCollection]("users" + currentGame.id)
+
+    val futureResult = userCollection.insert(user1)
+    futureResult.map(_=> Ok(views.html.waiting(currentGame, user1)))
   }
 
   def retrieveGame(collection: JSONCollection, gameKey: String): Future[List[Game]] = {

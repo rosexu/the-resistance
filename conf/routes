@@ -8,6 +8,7 @@ GET         /create-game         controllers.CreateGamePage.index
 GET         /join-game           controllers.JoinGamePage.index
 
 POST        /store-name          controllers.CreateGamePage.storeUserAndGameKey
+POST        /store-name-2        controllers.JoinGamePage.storeUser
 POST        /join-game           controllers.JoinGamePage.joinGame
 POST        /add-player          controllers.CreateGamePage.addPlayer
 # Map static resources from the /public folder to the /assets URL path
