@@ -1,5 +1,7 @@
-@main("Create Game | The Resistance") {
-    <form method="post" action="/store-name">
+@(link: String)
+
+@main("Enter Name | The Resistance") {
+    <form method="post" action=@link>
         <div class="form-group row no-margin">
             <label for="playerName">
                 Enter Your Name

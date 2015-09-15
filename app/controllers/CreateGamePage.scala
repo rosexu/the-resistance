@@ -33,7 +33,7 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
   var userCollection: JSONCollection = db.collection[JSONCollection]("users")
 
   def index = Action {
-    Ok(views.html.creategame())
+    Ok(views.html.creategame("/store-name"))
   }
 
   def storeUserAndGameKey = Action.async(parse.tolerantFormUrlEncoded) { request =>

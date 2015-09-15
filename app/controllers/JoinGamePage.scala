@@ -24,6 +24,8 @@ with MongoController with ReactiveMongoComponents{
   import models.JsonFormats._
 
   def gameCollection: JSONCollection = db.collection[JSONCollection]("games")
+// is there a better way of doing this? currently dummy global object as keyholder
+  var currentGame: Game = Game("1242", "waiting")
 
   def index = Action {
     Ok(views.html.joingame())
@@ -38,10 +40,11 @@ with MongoController with ReactiveMongoComponents{
 
     futureList onComplete{ list =>
       val game: Game = list.get.head
-      println(game.toString)
+      currentGame = game
+      println(currentGame)
     }
 
-    Ok(views.html.index())
+    Ok(views.html.creategame("/store-name-2"))
   }
 
   def retrieveGame(collection: JSONCollection, gameKey: String): Future[List[Game]] = {
