@@ -54,9 +54,17 @@ with MongoController with ReactiveMongoComponents{
     val user1: User = User(name, None)
 
     userCollection = db.collection[JSONCollection]("users" + currentGame.id)
-
+    val otherUsers: Future[List[User]] = userCollection.find(Json.obj()).cursor[User].collect[List]()
     val futureResult = userCollection.insert(user1)
-    futureResult.map(_=> Ok(views.html.waiting(currentGame, user1)))
+
+    val twoFut = for{
+      f1Result <- otherUsers
+      f2Result <- futureResult
+    } yield (f1Result, f2Result)
+
+    twoFut.map(thing =>
+      Ok(views.html.waiting(currentGame, user1, thing._1))
+    )
   }
 
   def retrieveGame(collection: JSONCollection, gameKey: String): Future[List[Game]] = {

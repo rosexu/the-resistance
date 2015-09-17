@@ -57,7 +57,7 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
     } yield (fr, fr2)
 
     waitForBoth.map(_=> startTailableCursor())
-    waitForBoth.map(_ => Ok(views.html.waiting(game, user1)))
+    waitForBoth.map(_ => Ok(views.html.waiting(game, user1, List[User]())))
   }
 
   def startTailableCursor(): Unit = {

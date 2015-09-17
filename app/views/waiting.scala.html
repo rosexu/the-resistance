@@ -1,4 +1,4 @@
-@(game: Game, currentUser: User)
+@(game: Game, currentUser: User, otherUsers: List[User])
 
 @main("Waiting For Players | The Resistance") {
     <div class="row no-margin">
@@ -15,6 +15,11 @@
                     <span class="glyphicon glyphicon-star"></span>
                     <span class="glyphicon glyphicon-flag"></span>
                 </li>
+                @for(person <- otherUsers) {
+                    <li>
+                        <span>@person.name</span>
+                    </li>
+                }
             </ol>
             <div class="buttons">
                 <button class="btn btn-default">Start Game</button>
