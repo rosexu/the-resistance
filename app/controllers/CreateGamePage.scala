@@ -1,11 +1,13 @@
 package controllers
 
 import javax.inject.Inject
-import models.{User, Game}
+import models.{MyWebSocketActor, User, Game}
 import play.api.libs.iteratee.Iteratee
 import play.api.libs.json.Json
 
 import play.api.mvc.{Action, Controller}
+import play.api.mvc._
+import play.api.Play.current
 import play.modules.reactivemongo.json.collection.JSONCollection
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 import reactivemongo.api.QueryOpts
@@ -32,6 +34,11 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
   def gameCollection: JSONCollection = db.collection[JSONCollection]("games")
   var messageCollection: BSONCollection = db.collection[BSONCollection]("messages")
   var userCollection: JSONCollection = db.collection[JSONCollection]("users")
+
+//  TODO: close the websocket when you start game
+  def socket = WebSocket.acceptWithActor[String, String] { request => out =>
+    MyWebSocketActor.props(out)
+  }
 
   def index = Action {
     Ok(views.html.creategame("/store-name"))

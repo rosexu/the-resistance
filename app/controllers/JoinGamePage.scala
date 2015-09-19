@@ -3,13 +3,16 @@ package controllers
 import javax.inject.Inject
 
 import models._
+import play.api.libs.iteratee.Iteratee
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 import play.modules.reactivemongo.{ReactiveMongoComponents, MongoController, ReactiveMongoApi}
-import reactivemongo.api.Cursor
+import reactivemongo.api.{QueryOpts, Cursor}
 
 import play.modules.reactivemongo.json._
 import play.modules.reactivemongo.json.collection._
+import reactivemongo.api.collections.bson.BSONCollection
+import reactivemongo.bson.BSONDocument
 import utilities.optionalUtil
 
 import scala.concurrent.Future
@@ -28,6 +31,7 @@ with MongoController with ReactiveMongoComponents{
 // is there a better way of doing this? currently dummy global object as keyholder
   var currentGame: Game = Game("1242", "waiting")
   var userCollection: JSONCollection = db.collection[JSONCollection]("users")
+  var messageCollection: BSONCollection = db.collection[BSONCollection]("messages")
 
   def index = Action {
     Ok(views.html.joingame())
@@ -54,6 +58,7 @@ with MongoController with ReactiveMongoComponents{
     val user1: User = User(name, None)
 
     userCollection = db.collection[JSONCollection]("users" + currentGame.id)
+    messageCollection = db.collection[BSONCollection]("messages" + currentGame.id)
     val otherUsers: Future[List[User]] = userCollection.find(Json.obj()).cursor[User].collect[List]()
     val futureResult = userCollection.insert(user1)
 
@@ -62,6 +67,7 @@ with MongoController with ReactiveMongoComponents{
       f2Result <- futureResult
     } yield (f1Result, f2Result)
 
+    twoFut.map(_ => startTailableCursor())
     twoFut.map(thing =>
       Ok(views.html.waiting(currentGame, user1, thing._1))
     )
@@ -77,6 +83,22 @@ with MongoController with ReactiveMongoComponents{
     keycode match {
       case Some(key) => key
       case None => "error"
+    }
+  }
+
+  def startTailableCursor(): Unit = {
+    val fun: Future[Unit] = messageCollection.createCapped(1000, None)
+    fun onComplete{ _ =>
+      val doc = BSONDocument("message" -> "init")
+      messageCollection.insert(doc)
+      println("open tailable cursor")
+      val cursor = messageCollection
+        .find(BSONDocument())
+        .options(QueryOpts().tailable.awaitData)
+        .cursor()
+      cursor.enumerate().apply(Iteratee.foreach {
+        doc => println("Document inserted: " + doc.toString())
+      })
     }
   }
 }
