@@ -15,7 +15,9 @@
                 <li>
                     <span>@currentUser.name</span>
                     <span class="glyphicon glyphicon-star"></span>
-                    <span class="glyphicon glyphicon-flag"></span>
+                    @if(!fromJoinGamePage) {
+                        <span class="glyphicon glyphicon-flag"></span>
+                    }
                 </li>
                 <li ng-repeat="user in users">
                     <span>{{user.name}}</span>
