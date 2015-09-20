@@ -30,6 +30,7 @@ with MongoController with ReactiveMongoComponents{
   def gameCollection: JSONCollection = db.collection[JSONCollection]("games")
 // is there a better way of doing this? currently dummy global object as keyholder
   var currentGame: Game = Game("1242", "waiting")
+  var currentUser: User = User("admin", None)
   var userCollection: JSONCollection = db.collection[JSONCollection]("users")
   var messageCollection: BSONCollection = db.collection[BSONCollection]("messages")
 
@@ -56,6 +57,7 @@ with MongoController with ReactiveMongoComponents{
   def storeUser = Action.async(parse.tolerantFormUrlEncoded) { request =>
     val name: String = optionalUtil.getStringName(request.body.get("name").map(_.head))
     val user1: User = User(name, None)
+    currentUser = user1
 
     userCollection = db.collection[JSONCollection]("users" + currentGame.id)
     messageCollection = db.collection[BSONCollection]("messages" + currentGame.id)
@@ -69,7 +71,7 @@ with MongoController with ReactiveMongoComponents{
 
     twoFut.map(_ => startTailableCursor())
     twoFut.map(thing =>
-      Ok(views.html.waiting(currentGame, user1, thing._1))
+      Ok(views.html.waiting(currentGame, user1, true))
     )
   }
 
@@ -79,8 +81,8 @@ with MongoController with ReactiveMongoComponents{
     return futureList
   }
 
-  def getAllUsers = Action.async {
-    val allUsers = userCollection.find(Json.obj()).cursor[User].collect[List]()
+  def getAllOtherUsers = Action.async {
+    val allUsers = userCollection.find(Json.obj("name" -> Json.obj("$ne" -> currentUser.name))).cursor[User].collect[List]()
     allUsers.map(users => Ok(Json.toJson(users)))
   }
 
