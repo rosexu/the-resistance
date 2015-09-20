@@ -79,6 +79,11 @@ with MongoController with ReactiveMongoComponents{
     return futureList
   }
 
+  def getAllUsers = Action.async {
+    val allUsers = userCollection.find(Json.obj()).cursor[User].collect[List]()
+    allUsers.map(users => Ok(Json.toJson(users)))
+  }
+
   def getStringKeyCode(keycode: Option[String]): String = {
     keycode match {
       case Some(key) => key

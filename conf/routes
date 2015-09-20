@@ -7,6 +7,7 @@ GET         /                    controllers.Application.index
 GET         /create-game         controllers.CreateGamePage.index
 GET         /join-game           controllers.JoinGamePage.index
 GET         /ws                  controllers.CreateGamePage.socket
+GET         /get-all-users       controllers.JoinGamePage.getAllUsers
 
 POST        /store-name          controllers.CreateGamePage.storeUserAndGameKey
 POST        /store-name-2        controllers.JoinGamePage.storeUser

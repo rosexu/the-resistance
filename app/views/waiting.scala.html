@@ -1,7 +1,9 @@
 @(game: Game, currentUser: User, otherUsers: List[User])
+@scripts = { <script src="@routes.Assets.versioned("bower_components/angular/angular.min.js")"></script>
+             <script src="@routes.Assets.versioned("javascripts/waiting.js")"></script>}
 
-@main("Waiting For Players | The Resistance") {
-    <div class="row no-margin">
+@main("Waiting For Players | The Resistance", scripts) {
+    <div class="row no-margin" ng-controller="AppController">
         <div class="col-xs-12
                     col-sm-8 col-sm-offset-2">
             <div class="access-code text-center">
@@ -20,6 +22,9 @@
                         <span>@person.name</span>
                     </li>
                 }
+                <li ng-repeat="user in users">
+                    {{user.name}}
+                </li>
             </ol>
             <div class="buttons">
                 <button class="btn btn-default">Start Game</button>
