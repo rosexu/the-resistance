@@ -1,6 +1,8 @@
 @(game: Game, currentUser: User, fromJoinGamePage: Boolean)
 @scripts = { <script src="@routes.Assets.versioned("bower_components/angular/angular.min.js")"></script>
-             <script src="@routes.Assets.versioned("javascripts/waiting.js")"></script>}
+             <script src="@routes.Assets.versioned("javascripts/waiting.js")"></script>
+            <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
+}
 
 @main("Waiting For Players | The Resistance", scripts) {
     <div class="row no-margin" ng-controller="AppController">

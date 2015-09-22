@@ -1,7 +1,6 @@
 @(link: String)
-@scripts = { <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script> }
 
-@main("Enter Name | The Resistance", scripts) {
+@main("Enter Name | The Resistance") {
     <form method="post" action=@link>
         <div class="form-group row no-margin">
             <label for="playerName">
