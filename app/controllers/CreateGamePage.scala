@@ -37,7 +37,10 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
   var userCollection: JSONCollection = db.collection[JSONCollection]("users")
 
 //  TODO: close the websocket when you start game
-
+  /**
+   * End point for web socket
+   * @return Iteratee
+   */
   def socket = WebSocket.using[String] { request =>
 
     // Log events to the console
@@ -51,10 +54,19 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
     (in, out)
   }
 
+  /**
+   * End point for the Create Game Page
+   * @return a page template prompting user to enter name
+   */
   def index = Action {
     Ok(views.html.creategame("/store-name"))
   }
 
+  /**
+   * Create Game and User object and store those objects in the database. Triggered
+   * after the user enters her name and presses enter.
+   * @return the waiting page where the user wait for other players to join page
+   */
   def storeUserAndGameKey = Action.async(parse.tolerantFormUrlEncoded) { request =>
     val name: String = optionalUtil.getStringName(request.body.get("name").map(_.head))
     gameKey = generateGameKey
@@ -78,6 +90,10 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
     waitForBoth.map(_ => Ok(views.html.waiting(game, user1, false)))
   }
 
+  /**
+   * Start the pub/sub system using capped collection called messages<gamekey>
+   * and tailable cursor in MongoDB.
+   */
   def startTailableCursor(): Unit = {
     val fun: Future[Unit] = messageCollection.createCapped(1000, None)
     fun onComplete{ _ =>
@@ -94,12 +110,21 @@ class CreateGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends C
     }
   }
 
+  /**
+   * Tester endpoint to see if pub/sub system works
+   * @return Http Ok
+   */
   def addPlayer = Action {
     val doc = BSONDocument("message" -> "add new player")
     messageCollection.insert(doc)
     Ok
   }
 
+  /**
+   * Build a random six letter game key with lower and upper case
+   * letters as well as numbers
+   * @return String: six letter game key
+   */
   def generateGameKey: String = {
     val chars = ('a' to 'z') ++ ('A' to 'Z') ++ ('0' to '9')
     val r = scala.util.Random

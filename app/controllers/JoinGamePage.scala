@@ -21,6 +21,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * Page controller for the join game page
  * Created by rosexu on 15-09-01.
+ * @author Rose Xu
  */
 class JoinGamePage @Inject()(val reactiveMongoApi: ReactiveMongoApi) extends Controller
 with MongoController with ReactiveMongoComponents{
