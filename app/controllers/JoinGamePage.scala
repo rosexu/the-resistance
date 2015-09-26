@@ -35,10 +35,19 @@ with MongoController with ReactiveMongoComponents{
   var userCollection: JSONCollection = db.collection[JSONCollection]("users")
   var messageCollection: BSONCollection = db.collection[BSONCollection]("messages")
 
+  /**
+   * End point for page for join game
+   * @return Join Game Page where user is asked for game key
+   */
   def index = Action {
     Ok(views.html.joingame())
   }
 
+  /**
+   * Triggered when user presses submit after entering game code.
+   * Retrieves the game from MongoDB.
+   * @return page template where user is prompted for her name
+   */
   def joinGame = Action(parse.tolerantFormUrlEncoded) { request =>
     val keycode: String = getStringKeyCode(request.body.get("keycode").map(_.head))
 
@@ -55,6 +64,12 @@ with MongoController with ReactiveMongoComponents{
     Ok(views.html.creategame("/store-name-2"))
   }
 
+  /**
+   * Triggered after user enters name and submits. Stores the username
+   * in MongoDB, and starts pub/sub system.
+   * @return waiting page template where the user wait for more players
+   *         to join the game
+   */
   def storeUser = Action.async(parse.tolerantFormUrlEncoded) { request =>
     val name: String = optionalUtil.getStringName(request.body.get("name").map(_.head))
     val user1: User = User(name, None)
@@ -76,17 +91,32 @@ with MongoController with ReactiveMongoComponents{
     )
   }
 
+  /**
+   * Retrieves the corresponding game from MongoDB collection and returns it
+   * @param collection game collection
+   * @param gameKey
+   * @return A Future containing a singleton list of the game matching game key
+   */
   def retrieveGame(collection: JSONCollection, gameKey: String): Future[List[Game]] = {
     val cursor: Cursor[Game] = collection.find(Json.obj("id" -> gameKey)).cursor[Game]
     val futureList: Future[List[Game]] = cursor.collect[List]()
     return futureList
   }
 
+  /**
+   * Endpoint. Get all users who name is not the same as that of current user.
+   * @return JSON response of a list of users
+   */
   def getAllOtherUsers = Action.async {
     val allUsers = userCollection.find(Json.obj("name" -> Json.obj("$ne" -> currentUser.name))).cursor[User].collect[List]()
     allUsers.map(users => Ok(Json.toJson(users)))
   }
 
+  /**
+   * Function to pattern match game key from form request
+   * @param keycode game key
+   * @return String key; error if keycode is None
+   */
   def getStringKeyCode(keycode: Option[String]): String = {
     keycode match {
       case Some(key) => key
@@ -94,6 +124,9 @@ with MongoController with ReactiveMongoComponents{
     }
   }
 
+  /**
+   * Start pub/sub system
+   */
   def startTailableCursor(): Unit = {
     val fun: Future[Unit] = messageCollection.createCapped(1000, None)
     fun onComplete{ _ =>
